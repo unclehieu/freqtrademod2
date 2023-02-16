@@ -18,7 +18,7 @@ from freqtrade.data.converter import order_book_to_dataframe
 from freqtrade.data.dataprovider import DataProvider
 from freqtrade.edge import Edge
 from freqtrade.enums import (ExitCheckTuple, ExitType, RPCMessageType, RunMode, SignalDirection,
-                             State, TradingMode)
+                             State, TradingMode, SignalType)
 from freqtrade.exceptions import (DependencyException, ExchangeError, InsufficientFundsError,
                                   InvalidOrderException, PricingError)
 from freqtrade.exchange import timeframe_to_minutes, timeframe_to_next_date, timeframe_to_seconds
@@ -31,6 +31,7 @@ from freqtrade.resolvers import ExchangeResolver, StrategyResolver
 from freqtrade.rpc import RPCManager
 from freqtrade.rpc.external_message_consumer import ExternalMessageConsumer
 from freqtrade.strategy.interface import IStrategy
+from freqtrade.strategy.interface_mod import IStrategyMod
 from freqtrade.strategy.strategy_wrapper import strategy_safe_wrapper
 from freqtrade.util import FtPrecise
 from freqtrade.util.binance_mig import migrate_binance_futures_names
@@ -132,6 +133,8 @@ class FreqtradeBot(LoggingMixin):
         self.strategy.ft_bot_start()
         # Initialize protections AFTER bot start - otherwise parameters are not loaded.
         self.protections = ProtectionManager(self.config, self.strategy.protections)
+
+        IStrategyMod.rpc_manager = self.rpc
 
     def notify_status(self, msg: str) -> None:
         """
@@ -511,6 +514,15 @@ class FreqtradeBot(LoggingMixin):
             self.strategy.timeframe,
             analyzed_df
         )
+
+        # notify based on signal
+        if isinstance(self.strategy, IStrategyMod):
+            latest, latest_date = self.strategy.get_latest_candle(pair, self.strategy.timeframe, analyzed_df)
+            if latest is not None and latest_date is not None:
+                enter_long = latest[SignalType.ENTER_LONG.value] == 1
+                enter_short = latest.get(SignalType.ENTER_SHORT.value, 0) == 1
+                if enter_long == 1 or enter_short == 1:
+                    self.strategy.check_and_notify_signal(enter_long == 1, enter_short == 1, pair)
 
         if signal:
             if self.strategy.is_pair_locked(pair, candle_date=nowtime, side=signal):

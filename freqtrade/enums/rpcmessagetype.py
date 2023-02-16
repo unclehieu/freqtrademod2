@@ -23,6 +23,8 @@ class RPCMessageType(str, Enum):
     ANALYZED_DF = 'analyzed_df'
     NEW_CANDLE = 'new_candle'
 
+    SIGNAL = 'signal'
+
     def __repr__(self):
         return self.value
 

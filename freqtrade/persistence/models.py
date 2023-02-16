@@ -12,6 +12,7 @@ from freqtrade.exceptions import OperationalException
 from freqtrade.persistence.base import _DECL_BASE
 from freqtrade.persistence.migrations import check_migrate
 from freqtrade.persistence.pairlock import PairLock
+from freqtrade.persistence.signal_tracking import SignalTracking
 from freqtrade.persistence.trade_model import Order, Trade
 
 
@@ -57,7 +58,9 @@ def init_db(db_url: str) -> None:
     Trade.query = Trade._session.query_property()
     Order.query = Trade._session.query_property()
     PairLock.query = Trade._session.query_property()
+    SignalTracking.query = Trade._session.query_property()
 
     previous_tables = inspect(engine).get_table_names()
     _DECL_BASE.metadata.create_all(engine)
     check_migrate(engine, decl_base=_DECL_BASE, previous_tables=previous_tables)
+

@@ -43,6 +43,7 @@ BACKTEST_CACHE_AGE = ['none', 'day', 'week', 'month']
 BACKTEST_CACHE_DEFAULT = 'day'
 DRY_RUN_WALLET = 1000
 DATETIME_PRINT_FORMAT = '%Y-%m-%d %H:%M:%S'
+DATE_STORAGE_FORMAT = '%Y%m%d'
 MATH_CLOSE_PREC = 1e-14  # Precision used for float comparisons
 DEFAULT_DATAFRAME_COLUMNS = ['date', 'open', 'high', 'low', 'close', 'volume']
 # Don't modify sequence of DEFAULT_TRADES_COLUMNS

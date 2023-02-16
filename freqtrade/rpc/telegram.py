@@ -414,6 +414,10 @@ class Telegram(RPCHandler):
             message = f"{msg['status']}"
         elif msg_type == RPCMessageType.STRATEGY_MSG:
             message = f"{msg['msg']}"
+
+        elif msg_type == RPCMessageType.SIGNAL:
+            message = '*SIGNAL:* `{status}`'.format(**msg)
+
         else:
             logger.debug("Unknown message type: %s", msg_type)
             return None
