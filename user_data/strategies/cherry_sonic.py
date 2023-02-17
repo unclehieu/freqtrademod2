@@ -101,36 +101,76 @@ class CherrySonic(IStrategyMod):
                 (
                     (
                         # 4h
-                        self.touch_ema_buy(dataframe, '_4h') &
-                        self.closed_above_middle_candle(dataframe, '_4h') &
+                        (
+                            (
+                                self.touch_ema_buy(dataframe, '_4h') &
+                                self.closed_above_middle_candle(dataframe, '_4h')
+                            ) |
+                            (
+                                self.touch_ema_buy(dataframe.shift(1), '_4h') &
+                                self.closed_above_prev_candle(dataframe, '_4h')
+                            )
+                        ) &
                         self.volume_higher_mean(dataframe, '_4h')
                     ) |
                     (
                         # 2h
-                        self.touch_ema_buy(dataframe, '_2h') &
+                        (
+                            (
+                                self.touch_ema_buy(dataframe, '_2h') &
+                                self.closed_above_middle_candle(dataframe, '_2h')
+                            ) |
+                            (
+                                self.touch_ema_buy(dataframe.shift(1), '_2h') &
+                                self.closed_above_prev_candle(dataframe, '_2h')
+                            )
+                        ) &
                         self.trend_sonic_buy(dataframe, '_2h') &
-                        self.closed_above_middle_candle(dataframe, '_2h') &
                         self.volume_higher_mean(dataframe, '_2h')
                     ) |
                     (
                         # 1h
-                        self.touch_ema_buy(dataframe, '_1h') &
+                        (
+                            (
+                                self.touch_ema_buy(dataframe, '_1h') &
+                                self.closed_above_middle_candle(dataframe, '_1h')
+                            ) |
+                            (
+                                self.touch_ema_buy(dataframe.shift(1), '_1h') &
+                                self.closed_above_prev_candle(dataframe, '_1h')
+                            )
+                        ) &
                         (self.trend_sonic_buy(dataframe, '_1h') | self.trend_sonic_revert_soon_buy(dataframe, '_1h')) &
-                        self.closed_above_middle_candle(dataframe, '_1h') &
                         self.volume_higher_mean(dataframe, '_1h')
                     ) |
                     (
                         # 30m
-                        self.touch_ema_buy(dataframe, '_30m') &
+                        (
+                            (
+                                self.touch_ema_buy(dataframe, '_30m') &
+                                self.closed_above_middle_candle(dataframe, '_30m')
+                            ) |
+                            (
+                                self.touch_ema_buy(dataframe.shift(1), '_30m') &
+                                self.closed_above_prev_candle(dataframe, '_30m')
+                            )
+                        ) &
                         (self.trend_sonic_buy(dataframe, '_30m') | self.trend_sonic_revert_soon_buy(dataframe, '_30m')) &
-                        self.closed_above_middle_candle(dataframe, '_30m') &
                         self.volume_higher_mean(dataframe, '_30m')
                     ) |
                     (
                         # 15m
-                        self.touch_ema_buy(dataframe) &
+                        (
+                            (
+                                self.touch_ema_buy(dataframe) &
+                                self.closed_above_middle_candle(dataframe)
+                            ) |
+                            (
+                                self.touch_ema_buy(dataframe.shift(1)) &
+                                self.closed_above_prev_candle(dataframe)
+                            )
+                        ) &
                         (self.trend_sonic_buy(dataframe) | self.trend_sonic_revert_soon_buy(dataframe)) &
-                        self.closed_above_middle_candle(dataframe) &
                         self.volume_higher_mean(dataframe)
                     )
                 )
@@ -145,36 +185,76 @@ class CherrySonic(IStrategyMod):
                 (
                     (
                         # 4h
-                        self.touch_ema_sell(dataframe, '_4h') &
-                        self.closed_below_middle_candle(dataframe, '_4h') &
+                        (
+                            (
+                                self.touch_ema_sell(dataframe, '_4h') &
+                                self.closed_below_middle_candle(dataframe, '_4h')
+                            ) |
+                            (
+                                self.touch_ema_sell(dataframe.shift(1), '_4h') &
+                                self.closed_below_prev_candle(dataframe, '_4h')
+                            )
+                        ) &
                         self.volume_higher_mean(dataframe, '_4h')
                     ) |
                     (
                         # 2h
-                        self.touch_ema_sell(dataframe, '_2h') &
+                        (
+                            (
+                                self.touch_ema_sell(dataframe, '_2h') &
+                                self.closed_below_middle_candle(dataframe, '_2h')
+                            ) |
+                            (
+                                self.touch_ema_sell(dataframe.shift(1), '_2h') &
+                                self.closed_below_prev_candle(dataframe, '_2h')
+                            )
+                        ) &
                         self.trend_sonic_sell(dataframe, '_2h') &
-                        self.closed_below_middle_candle(dataframe, '_2h') &
                         self.volume_higher_mean(dataframe, '_2h')
                     ) |
                     (
                         # 1h
-                        self.touch_ema_sell(dataframe, '_1h') &
+                        (
+                            (
+                                self.touch_ema_sell(dataframe, '_1h') &
+                                self.closed_below_middle_candle(dataframe, '_1h')
+                            ) |
+                            (
+                                self.touch_ema_sell(dataframe.shift(1), '_1h') &
+                                self.closed_below_prev_candle(dataframe, '_1h')
+                            )
+                        ) &
                         (self.trend_sonic_sell(dataframe, '_1h') | self.trend_sonic_revert_soon_sell(dataframe, '_1h')) &
-                        self.closed_below_middle_candle(dataframe, '_1h') &
                         self.volume_higher_mean(dataframe, '_1h')
                     ) |
                     (
                         # 30m
-                        self.touch_ema_sell(dataframe, '_30m') &
+                        (
+                            (
+                                self.touch_ema_sell(dataframe, '_30m') &
+                                self.closed_below_middle_candle(dataframe, '_30m')
+                            ) |
+                            (
+                                self.touch_ema_sell(dataframe.shift(1), '_30m') &
+                                self.closed_below_prev_candle(dataframe, '_30m')
+                            )
+                        ) &
                         (self.trend_sonic_sell(dataframe, '_30m') | self.trend_sonic_revert_soon_sell(dataframe, '_30m')) &
-                        self.closed_below_middle_candle(dataframe, '_30m') &
                         self.volume_higher_mean(dataframe, '_30m')
                     ) |
                     (
                         # 15m
-                        self.touch_ema_sell(dataframe) &
+                        (
+                            (
+                                self.touch_ema_sell(dataframe) &
+                                self.closed_below_middle_candle(dataframe)
+                            ) |
+                            (
+                                self.touch_ema_sell(dataframe.shift(1)) &
+                                self.closed_below_prev_candle(dataframe)
+                            )
+                        ) &
                         (self.trend_sonic_sell(dataframe) | self.trend_sonic_revert_soon_sell(dataframe)) &
-                        self.closed_below_middle_candle(dataframe) &
                         self.volume_higher_mean(dataframe)
                     )
                 )
