@@ -14,6 +14,8 @@ from freqtrade.strategy.interface import IStrategy
 
 class IStrategyMod(IStrategy, ABC):
     INTERFACE_VERSION = 3
+    VOL_MEAN_LEN = 5
+    VOL_MEAN_MULTI = 2
 
     BUY: str = 'BUY'
     SELL: str = 'SELL'
@@ -65,50 +67,11 @@ class IStrategyMod(IStrategy, ABC):
             return False
 
     @staticmethod
-    def volume_increasing_buy(dataframe: DataFrame, tf_suffix: str = ''):
-        return (
-            (
-                (dataframe['volume' + tf_suffix].shift(1) < dataframe['volume' + tf_suffix]) &
-                (dataframe['close' + tf_suffix] > dataframe['open' + tf_suffix])
-            ) |
-            (
-                    (dataframe['volume' + tf_suffix].shift(1) > dataframe['volume' + tf_suffix]) &
-                    (dataframe['close' + tf_suffix] < dataframe['open' + tf_suffix])
-            ) |
-            (
-                    (dataframe['volume' + tf_suffix].shift(1) < dataframe['volume' + tf_suffix]) &
-                    (dataframe['close' + tf_suffix] < dataframe['open' + tf_suffix]) &
-                    (dataframe['close' + tf_suffix] > (dataframe['high' + tf_suffix] - ((dataframe['high' + tf_suffix] - dataframe['low' + tf_suffix]) / 2)))
-            )
-
-        )
-
-    @staticmethod
-    def volume_increasing_sell(dataframe: DataFrame, tf_suffix: str = ''):
-        return (
-                (
-                        (dataframe['volume' + tf_suffix].shift(1) > dataframe['volume' + tf_suffix]) &
-                        (dataframe['close' + tf_suffix] > dataframe['open' + tf_suffix])
-                ) |
-                (
-                        (dataframe['volume' + tf_suffix].shift(1) < dataframe['volume' + tf_suffix]) &
-                        (dataframe['close' + tf_suffix] < dataframe['open' + tf_suffix])
-                ) |
-                (
-                        (dataframe['volume' + tf_suffix].shift(1) < dataframe['volume' + tf_suffix]) &
-                        (dataframe['close' + tf_suffix] > dataframe['open' + tf_suffix]) &
-                        (dataframe['close' + tf_suffix] < (dataframe['high' + tf_suffix] - ((dataframe['high' + tf_suffix] - dataframe['low' + tf_suffix]) / 2)))
-                )
-
-        )
-
-    @staticmethod
     def volume_higher_prev(dataframe: DataFrame, tf_suffix: str = ''):
         return dataframe['volume' + tf_suffix].shift(1) < dataframe['volume' + tf_suffix]
 
-    @staticmethod
-    def volume_higher_mean(dataframe: DataFrame, tf_suffix: str = ''):
-        return dataframe['volume' + tf_suffix] > dataframe['volume' + tf_suffix].tail(5).mean()
+    def volume_higher_mean(self, dataframe: DataFrame, tf_suffix: str = ''):
+        return dataframe['volume' + tf_suffix] > dataframe['volume' + tf_suffix].shift(1).tail(self.VOL_MEAN_LEN).mean() * self.VOL_MEAN_MULTI
 
     @staticmethod
     def touch_buy(self, dataframe: DataFrame, support: pd.Series, tf_suffix: str = ''):
@@ -141,13 +104,13 @@ class IStrategyMod(IStrategy, ABC):
     @staticmethod
     def closed_above_prev_candle(dataframe: DataFrame, tf_suffix: str = ''):
         return (
-            (dataframe['close' + tf_suffix] > dataframe['close' + tf_suffix].shift(1))
+            (dataframe['close' + tf_suffix] > dataframe['high' + tf_suffix].shift(1))
         )
 
     @staticmethod
     def closed_below_prev_candle(dataframe: DataFrame, tf_suffix: str = ''):
         return (
-            (dataframe['close' + tf_suffix] < dataframe['close' + tf_suffix].shift(1))
+            (dataframe['close' + tf_suffix] < dataframe['low' + tf_suffix].shift(1))
         )
 
     @staticmethod
