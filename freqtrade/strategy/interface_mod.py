@@ -31,33 +31,35 @@ class IStrategyMod(IStrategy, ABC):
             'status': f"{pair} - {signal} - {self.timeframe} - {self.__class__.__name__}"
         })
 
-    def check_and_notify_signal(self, buy: bool, sell: bool, pair: str):
-        if buy and not self.check_already_tracked(signal=self.BUY, pair=pair):
+    def check_and_notify_signal(self, buy: bool, sell: bool, pair: str, filter_str: str):
+        if buy and not self.check_already_tracked_signal(signal=self.BUY, pair=pair, filter_str=filter_str):
             self.send_notification(pair, self.BUY)
-            self.track_signal(signal=self.BUY, pair=pair)
+            self.track_signal(signal=self.BUY, pair=pair, filter_str=filter_str)
 
-        if sell and not self.check_already_tracked(signal=self.SELL, pair=pair):
+        if sell and not self.check_already_tracked_signal(signal=self.SELL, pair=pair, filter_str=filter_str):
             self.send_notification(pair, self.SELL)
-            self.track_signal(signal=self.SELL, pair=pair)
+            self.track_signal(signal=self.SELL, pair=pair, filter_str=filter_str)
 
-    def track_signal(self, signal: str, pair: str):
+    def track_signal(self, signal: str, pair: str, filter_str: str):
         now = datetime.now(self.TIME_ZONE)
         signal = SignalTracking(pair=pair,
                                 timeframe=self.timeframe,
                                 signal=signal,
                                 strategy=self.__class__.__name__,
+                                filter_str=filter_str,
                                 created_time=now,
                                 created_date=int(now.strftime(DATE_STORAGE_FORMAT)))
         SignalTracking.query.session.add(signal)
         SignalTracking.query.session.commit()
 
-    def check_already_tracked(self, signal: str, pair: str):
+    def check_already_tracked_signal(self, signal: str, pair: str, filter_str: str):
         signals = SignalTracking.query_signals(
                                 pair=pair,
                                 timeframe=self.timeframe,
                                 signal=signal,
                                 strategy=self.__class__.__name__,
-                                date=int(datetime.now(self.TIME_ZONE).strftime(DATE_STORAGE_FORMAT))).all()
+                                date=int(datetime.now(self.TIME_ZONE).strftime(DATE_STORAGE_FORMAT)),
+                                filter_str=filter_str).all()
         return len(signals) > 0
 
     def confirm_trade_entry(self, pair: str, order_type: str, amount: float, rate: float, time_in_force: str,

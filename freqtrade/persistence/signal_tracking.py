@@ -19,6 +19,7 @@ class SignalTracking(_DECL_BASE):
     timeframe = Column(String(10), nullable=False, index=False)
     signal = Column(String(10), nullable=False, index=False)
     strategy = Column(String(255), nullable=True)
+    filter_str = Column(String(255), nullable=True, index=True)
     created_time = Column(DateTime, nullable=False)
     created_date = Column(Integer, nullable=False, index=True)
 
@@ -28,7 +29,7 @@ class SignalTracking(_DECL_BASE):
 
     @staticmethod
     def query_signals(pair: Optional[str], timeframe: Optional[str], signal: Optional[str], strategy: Optional[str],
-                      date: int) -> Query:
+                      date: int, filter_str: Optional[str]) -> Query:
         """
         Get all signals for this pair by date
         """
@@ -46,6 +47,9 @@ class SignalTracking(_DECL_BASE):
         if strategy:
             filters.append(SignalTracking.strategy == strategy)
 
+        if filter_str:
+            filters.append(SignalTracking.filter_str == filter_str)
+
         return SignalTracking.query.filter(
             *filters
         )
@@ -57,5 +61,6 @@ class SignalTracking(_DECL_BASE):
             'created_time': self.created_time.strftime(DATETIME_PRINT_FORMAT),
             'timeframe': self.timeframe,
             'signal': self.signal,
+            'filter_str': self.filter_str,
             'strategy': self.strategy
         }

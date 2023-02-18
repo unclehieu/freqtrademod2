@@ -239,6 +239,7 @@ class FreqtradeBot(LoggingMixin):
         # Then looking for buy opportunities
         if self.get_free_open_trades():
             self.enter_positions()
+            self.check_and_notify_signals()
         if self.trading_mode == TradingMode.FUTURES:
             self._schedule.run_pending()
         Trade.commit()
@@ -514,15 +515,6 @@ class FreqtradeBot(LoggingMixin):
             self.strategy.timeframe,
             analyzed_df
         )
-
-        # notify based on signal
-        if isinstance(self.strategy, IStrategyMod):
-            latest, latest_date = self.strategy.get_latest_candle(pair, self.strategy.timeframe, analyzed_df)
-            if latest is not None and latest_date is not None:
-                enter_long = latest[SignalType.ENTER_LONG.value] == 1
-                enter_short = latest.get(SignalType.ENTER_SHORT.value, 0) == 1
-                if enter_long == 1 or enter_short == 1:
-                    self.strategy.check_and_notify_signal(enter_long == 1, enter_short == 1, pair)
 
         if signal:
             if self.strategy.is_pair_locked(pair, candle_date=nowtime, side=signal):
@@ -1990,3 +1982,50 @@ class FreqtradeBot(LoggingMixin):
         return max(
             min(valid_custom_price, max_custom_price_allowed),
             min_custom_price_allowed)
+
+    def check_and_notify_signals(self) -> None:
+        if not isinstance(self.strategy, IStrategyMod):
+            return None
+
+        whitelist = copy.deepcopy(self.active_pair_whitelist)
+        if not whitelist:
+            self.log_once("Active pair whitelist is empty.", logger.info)
+            return None
+
+        long_signals = ''
+        short_signals = ''
+
+        for pair in whitelist:
+            analyzed_df, _ = self.dataprovider.get_analyzed_dataframe(pair, self.strategy.timeframe)
+            # notify based on signal
+            latest, latest_date = self.strategy.get_latest_candle(pair, self.strategy.timeframe, analyzed_df)
+            if latest is not None and latest_date is not None:
+                signal_long = latest.get('enter_long', 0) == 1
+                signal_short = latest.get('enter_short', 0) == 1
+                filter_str = latest['date_4h'].strftime("%Y-%m-%d %H:%M:%S")
+
+                if signal_long and not self.strategy.check_already_tracked_signal('BUY', pair, filter_str):
+                    if len(long_signals) > 0:
+                        long_signals += '\n'
+
+                    long_signals += pair
+                    self.strategy.track_signal('BUY', pair, filter_str)
+
+                elif signal_short and not self.strategy.check_already_tracked_signal('SELL', pair, filter_str):
+                    if len(short_signals) > 0:
+                        short_signals += '\n'
+
+                    short_signals += pair
+                    self.strategy.track_signal('SELL', pair, filter_str)
+
+        if len(long_signals) > 0:
+            self.rpc.send_msg({
+                'type': RPCMessageType.SIGNAL,
+                'status': f"BUY - {self.strategy.timeframe} - {self.strategy.__class__.__name__}\n{long_signals}"
+            })
+
+        if len(short_signals) > 0:
+            self.rpc.send_msg({
+                'type': RPCMessageType.SIGNAL,
+                'status': f"SELL - {self.strategy.timeframe} - {self.strategy.__class__.__name__}\n{short_signals}"
+            })
