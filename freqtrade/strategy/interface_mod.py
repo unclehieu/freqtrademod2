@@ -14,7 +14,7 @@ from freqtrade.strategy.interface import IStrategy
 
 class IStrategyMod(IStrategy, ABC):
     INTERFACE_VERSION = 3
-    VOL_MEAN_LEN = 5
+    VOL_MEAN_LEN = 6
     VOL_MEAN_MULTI = 2
 
     BUY: str = 'BUY'
@@ -80,7 +80,7 @@ class IStrategyMod(IStrategy, ABC):
         return (
                 (dataframe['close' + tf_suffix] > support) &
                 (dataframe['low' + tf_suffix] <= support) &
-                self.closed_above_middle_candle(dataframe)
+                self.bullish_candle(dataframe)
         )
 
     @staticmethod
@@ -88,7 +88,7 @@ class IStrategyMod(IStrategy, ABC):
         return (
                 (dataframe['close' + tf_suffix] < resistance) &
                 (dataframe['high' + tf_suffix] >= resistance) &
-                self.closed_below_middle_candle(dataframe)
+                self.bearish_candle(dataframe)
         )
 
     @staticmethod
@@ -116,13 +116,29 @@ class IStrategyMod(IStrategy, ABC):
         )
 
     @staticmethod
+    def bullish_candle(dataframe: DataFrame, tf_suffix: str = ''):
+        return (
+            (dataframe['close' + tf_suffix] > (dataframe['high' + tf_suffix] -
+                                               ((dataframe['high' + tf_suffix] - dataframe['low' + tf_suffix]) / 2.5)))
+        )
+
+    @staticmethod
+    def bearish_candle(dataframe: DataFrame, tf_suffix: str = ''):
+        return (
+            (dataframe['close' + tf_suffix] < (dataframe['high' + tf_suffix] -
+                                               ((dataframe['high' + tf_suffix] - dataframe['low' + tf_suffix]) / 1.5)))
+        )
+
+    @staticmethod
     def closed_above_middle_candle(dataframe: DataFrame, tf_suffix: str = ''):
         return (
-            (dataframe['close' + tf_suffix] > (dataframe['high' + tf_suffix] - ((dataframe['high' + tf_suffix] - dataframe['low' + tf_suffix]) / 2)))
+            (dataframe['close' + tf_suffix] > (dataframe['high' + tf_suffix] - (
+                        (dataframe['high' + tf_suffix] - dataframe['low' + tf_suffix]) / 2)))
         )
 
     @staticmethod
     def closed_below_middle_candle(dataframe: DataFrame, tf_suffix: str = ''):
         return (
-            (dataframe['close' + tf_suffix] < (dataframe['high' + tf_suffix] - ((dataframe['high' + tf_suffix] - dataframe['low' + tf_suffix]) / 2)))
+            (dataframe['close' + tf_suffix] < (dataframe['high' + tf_suffix] - (
+                        (dataframe['high' + tf_suffix] - dataframe['low' + tf_suffix]) / 2)))
         )
