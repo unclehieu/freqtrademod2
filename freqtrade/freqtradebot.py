@@ -2002,7 +2002,7 @@ class FreqtradeBot(LoggingMixin):
             if latest is not None and latest_date is not None:
                 signal_long = latest.get('enter_long', 0) == 1
                 signal_short = latest.get('enter_short', 0) == 1
-                filter_str = latest['date_4h'].strftime("%Y-%m-%d %H:%M:%S")
+                filter_str = latest.get(self.config['signal_filter_field_name']).strftime("%Y-%m-%d %H:%M:%S")
 
                 if signal_long and not self.strategy.check_already_tracked_signal('BUY', pair, filter_str):
                     if len(long_signals) > 0:
