@@ -11,6 +11,7 @@ class CherrySonicDragon(IStrategyMod):
     """
 
     author@: Hieu Le
+    When H4 theo sonic va nam ngoai dragon thi tiep tuc long/short khung nho khi cham ema
 
     """
     can_short = False
@@ -33,8 +34,8 @@ class CherrySonicDragon(IStrategyMod):
 
     DEFAULT_RSI_PERIOD = 14
     MEDIUM_RSI = 50
-    OVER_BOUGHT_RSI = 70
-    OVER_SOLD_RSI = 30
+    OVER_BOUGHT_RSI = 75
+    OVER_SOLD_RSI = 25
 
     def informative_pairs(self):
         pairs = self.dp.current_whitelist()

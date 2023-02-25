@@ -12,6 +12,8 @@ class CherrySonicWing(IStrategyMod):
 
     author@: Hieu Le
 
+    When H4 theo sonic, gia cham ema se vao lenh
+
     """
     can_short = False
 

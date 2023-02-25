@@ -15,7 +15,7 @@ from freqtrade.strategy.interface import IStrategy
 class IStrategyMod(IStrategy, ABC):
     INTERFACE_VERSION = 3
     VOL_MEAN_LEN = 6
-    VOL_MEAN_MULTI = 2
+    VOL_MEAN_MULTI = 1.5
 
     BUY: str = 'BUY'
     SELL: str = 'SELL'
