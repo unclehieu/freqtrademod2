@@ -142,3 +142,23 @@ class IStrategyMod(IStrategy, ABC):
             (dataframe['close' + tf_suffix] < (dataframe['high' + tf_suffix] - (
                         (dataframe['high' + tf_suffix] - dataframe['low' + tf_suffix]) / 2)))
         )
+
+    @staticmethod
+    def trend_sonic_keep_parent_buy(dataframe: DataFrame, parent_tf_suffix: str, tf_suffix: str = ''):
+        return (
+                (dataframe['ema34' + tf_suffix] >= dataframe['ema200' + tf_suffix]) &
+                (dataframe['ema89' + tf_suffix] >= dataframe['ema200' + tf_suffix]) &
+                # parent
+                (dataframe['ema34' + parent_tf_suffix] >= dataframe['ema89' + parent_tf_suffix]) &
+                (dataframe['ema89' + parent_tf_suffix] >= dataframe['ema200' + parent_tf_suffix])
+        )
+
+    @staticmethod
+    def trend_sonic_keep_parent_sell(dataframe: DataFrame, parent_tf_suffix: str, tf_suffix: str = ''):
+        return (
+                (dataframe['ema34' + tf_suffix] <= dataframe['ema200' + tf_suffix]) &
+                (dataframe['ema89' + tf_suffix] <= dataframe['ema200' + tf_suffix]) &
+                # parent
+                (dataframe['ema34' + parent_tf_suffix] <= dataframe['ema89' + parent_tf_suffix]) &
+                (dataframe['ema89' + parent_tf_suffix] <= dataframe['ema200' + parent_tf_suffix])
+        )

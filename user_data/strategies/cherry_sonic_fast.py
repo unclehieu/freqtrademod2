@@ -39,12 +39,24 @@ class CherrySonicFast(IStrategyMod):
     OVER_SOLD_RSI = 25
 
     def informative_pairs(self):
+        pairs = self.dp.current_whitelist()
 
-        return []
+        tf_1h = [(pair, '1h') for pair in pairs]
+
+        return tf_1h
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         if not self.dp:
             return dataframe
+
+        # EMA for 1h
+        tf_1h = '1h'
+        informative_1h = self.dp.get_pair_dataframe(pair=metadata['pair'], timeframe=tf_1h)
+        informative_1h['ema34'] = ta.EMA(informative_1h, 34)
+        informative_1h['ema89'] = ta.EMA(informative_1h, 89)
+        informative_1h['ema200'] = ta.EMA(informative_1h, 200)
+
+        dataframe = merge_informative_pair(dataframe, informative_1h, self.timeframe, tf_1h, ffill=True)
 
         # 30m
         dataframe['rsi'] = ta.RSI(dataframe, timeperiod=self.DEFAULT_RSI_PERIOD)
@@ -60,10 +72,11 @@ class CherrySonicFast(IStrategyMod):
         # long
         dataframe.loc[
             (
-                (self.trend_sonic_buy(dataframe) | self.trend_sonic_revert_soon_buy(dataframe)) &
+                (self.trend_sonic_buy(dataframe) | self.trend_sonic_revert_soon_buy(dataframe)
+                 | self.trend_sonic_keep_parent_buy(dataframe, '_1h')) &
                 (dataframe['rsi'] > self.MEDIUM_RSI) &
                 (dataframe['rsi'] < self.OVER_BOUGHT_RSI) &
-                (dataframe['low'] <= dataframe['ema34_high']) &
+                (dataframe['low'] <= dataframe['ema34']) &
                 (dataframe['close'] > dataframe['ema34_high']) &
                 self.closed_above_prev_candle(dataframe) &
                 self.bullish_candle(dataframe) &
@@ -76,10 +89,11 @@ class CherrySonicFast(IStrategyMod):
         # short
         dataframe.loc[
             (
-                (self.trend_sonic_sell(dataframe) | self.trend_sonic_revert_soon_sell(dataframe)) &
+                (self.trend_sonic_sell(dataframe) | self.trend_sonic_revert_soon_sell(dataframe)
+                 | self.trend_sonic_keep_parent_sell(dataframe, '_1h')) &
                 (dataframe['rsi'] < self.MEDIUM_RSI) &
                 (dataframe['rsi'] > self.OVER_SOLD_RSI) &
-                (dataframe['high'] >= dataframe['ema34_low']) &
+                (dataframe['high'] >= dataframe['ema34']) &
                 (dataframe['close'] < dataframe['ema34_low']) &
                 self.closed_below_prev_candle(dataframe) &
                 self.bearish_candle(dataframe) &

@@ -3,3 +3,5 @@ freqtrade trade -s CherrySonicDragon --starting-balance 10000 -c user_data/confi
 freqtrade trade -s CherrySonicTop --starting-balance 10000 -c user_data/config_sonic_top.json --db-url sqlite:///user_data/sonic_top.sqlite
 
 freqtrade trade -s CherrySonicFast --starting-balance 10000 -c user_data/config_sonic_fast.json --db-url sqlite:///user_data/sonic_fast.sqlite
+
+freqtrade trade -s CherrySonicWing --starting-balance 10000 -c user_data/config_sonic.json --db-url sqlite:///user_data/sonic_wing.dryrun.sqlite

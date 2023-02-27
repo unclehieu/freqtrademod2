@@ -42,8 +42,9 @@ class CherrySonicTop(IStrategyMod):
         pairs = self.dp.current_whitelist()
 
         tf_4h = [(pair, '4h') for pair in pairs]
+        tf_1h = [(pair, '1h') for pair in pairs]
 
-        return tf_4h
+        return tf_4h + tf_1h
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         if not self.dp:
@@ -58,6 +59,15 @@ class CherrySonicTop(IStrategyMod):
         informative_4h['rsi'] = ta.RSI(informative_4h, timeperiod=self.DEFAULT_RSI_PERIOD)
 
         dataframe = merge_informative_pair(dataframe, informative_4h, self.timeframe, tf_4h, ffill=True)
+
+        # EMA for 1h
+        tf_1h = '1h'
+        informative_1h = self.dp.get_pair_dataframe(pair=metadata['pair'], timeframe=tf_1h)
+        informative_1h['ema34'] = ta.EMA(informative_1h, 34)
+        informative_1h['ema89'] = ta.EMA(informative_1h, 89)
+        informative_1h['ema200'] = ta.EMA(informative_1h, 200)
+
+        dataframe = merge_informative_pair(dataframe, informative_1h, self.timeframe, tf_1h, ffill=True)
 
         # 30m
         dataframe['ema34'] = ta.EMA(dataframe, 34)
@@ -81,7 +91,8 @@ class CherrySonicTop(IStrategyMod):
                 self.closed_above_prev_candle(dataframe) &
                 self.bullish_candle(dataframe) &
                 self.volume_higher_mean(dataframe) &
-                (self.trend_sonic_buy(dataframe) | self.trend_sonic_revert_soon_buy(dataframe))
+                (self.trend_sonic_buy(dataframe) | self.trend_sonic_revert_soon_buy(dataframe)
+                 | self.trend_sonic_keep_parent_buy(dataframe, '_1h'))
 
              )
 
@@ -99,7 +110,8 @@ class CherrySonicTop(IStrategyMod):
                 self.closed_below_prev_candle(dataframe) &
                 self.bearish_candle(dataframe) &
                 self.volume_higher_mean(dataframe) &
-                (self.trend_sonic_sell(dataframe) | self.trend_sonic_revert_soon_sell(dataframe))
+                (self.trend_sonic_sell(dataframe) | self.trend_sonic_revert_soon_sell(dataframe)
+                 | self.trend_sonic_keep_parent_sell(dataframe, '_1h'))
             )
 
             , 'enter_short'] = 1
