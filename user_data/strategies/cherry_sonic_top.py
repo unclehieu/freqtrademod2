@@ -82,7 +82,7 @@ class CherrySonicTop(IStrategyMod):
         # long
         dataframe.loc[
             (
-                self.trend_sonic_buy(dataframe, '_4h') &
+                (self.trend_sonic_buy(dataframe, '_4h') | self.check_if_trend_sonic_soft_buy(dataframe, '_4h')) &
                 (dataframe['close_4h'] > dataframe['ema89_4h']) &
                 (dataframe['rsi_4h'] > self.MEDIUM_RSI) &
                 (dataframe['rsi_4h'] < self.OVER_BOUGHT_RSI) &
@@ -101,7 +101,7 @@ class CherrySonicTop(IStrategyMod):
         # short
         dataframe.loc[
             (
-                self.trend_sonic_sell(dataframe, '_4h') &
+                (self.trend_sonic_sell(dataframe, '_4h') | self.check_if_trend_sonic_soft_sell(dataframe, '_4h')) &
                 (dataframe['close_4h'] < dataframe['ema89_4h']) &
                 (dataframe['rsi_4h'] < self.MEDIUM_RSI) &
                 (dataframe['rsi_4h'] > self.OVER_SOLD_RSI) &
@@ -135,18 +135,6 @@ class CherrySonicTop(IStrategyMod):
                 (dataframe['ema34' + tf_suffix] <= dataframe['ema89' + tf_suffix]) &
                 (dataframe['ema89' + tf_suffix] <= dataframe['ema200' + tf_suffix])
                 # (dataframe['ema200' + tf_suffix] <= dataframe['ema610' + tf_suffix])
-        )
-
-    @staticmethod
-    def trend_sonic_soft_buy(dataframe: DataFrame, tf_suffix: str = ''):
-        return (
-                (dataframe['ema34' + tf_suffix] >= dataframe['ema89' + tf_suffix])
-        )
-
-    @staticmethod
-    def trend_sonic_soft_sell(dataframe: DataFrame, tf_suffix: str = ''):
-        return (
-                (dataframe['ema34' + tf_suffix] <= dataframe['ema89' + tf_suffix])
         )
 
     @staticmethod

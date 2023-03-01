@@ -83,9 +83,10 @@ class CherrySonicDragon(IStrategyMod):
         # long
         dataframe.loc[
             (
-                self.trend_sonic_buy(dataframe, '_4h') &
+                (self.trend_sonic_buy(dataframe, '_4h') | self.check_if_trend_sonic_soft_buy(dataframe, '_4h')) &
                 # price above dragon
-                (dataframe['close_4h'] > dataframe['ema34_high_4h']) &
+                # (dataframe['close_4h'] > dataframe['ema34_high_4h']) &
+                (dataframe['close_4h'] > dataframe['ema34_4h']) &
                 (dataframe['rsi_4h'] > self.MEDIUM_RSI) &
                 (dataframe['rsi_4h'] < self.OVER_BOUGHT_RSI) &
                 (
@@ -128,9 +129,10 @@ class CherrySonicDragon(IStrategyMod):
         # short
         dataframe.loc[
             (
-                self.trend_sonic_sell(dataframe, '_4h') &
+                (self.trend_sonic_sell(dataframe, '_4h') | self.check_if_trend_sonic_soft_sell(dataframe, '_4h')) &
                 # price below dragon
-                (dataframe['close_4h'] < dataframe['ema34_low_4h']) &
+                # (dataframe['close_4h'] < dataframe['ema34_low_4h']) &
+                (dataframe['close_4h'] < dataframe['ema34_4h']) &
                 (dataframe['rsi_4h'] < self.MEDIUM_RSI) &
                 (dataframe['rsi_4h'] > self.OVER_SOLD_RSI) &
                 (
@@ -149,7 +151,7 @@ class CherrySonicDragon(IStrategyMod):
                         ) &
                         (self.trend_sonic_sell(dataframe, '_1h') | self.trend_sonic_revert_soon_sell(dataframe, '_1h'))
                     ) |
-                   # 30m
+                    # 30m
                     (
                         (
                             (

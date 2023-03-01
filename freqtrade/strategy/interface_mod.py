@@ -162,3 +162,25 @@ class IStrategyMod(IStrategy, ABC):
                 (dataframe['ema34' + parent_tf_suffix] <= dataframe['ema89' + parent_tf_suffix]) &
                 (dataframe['ema89' + parent_tf_suffix] <= dataframe['ema200' + parent_tf_suffix])
         )
+
+    @staticmethod
+    def trend_sonic_soft_buy(dataframe: DataFrame, tf_suffix: str = ''):
+        return (
+            (dataframe['ema34' + tf_suffix] >= dataframe['ema89' + tf_suffix])
+        )
+
+    @staticmethod
+    def trend_sonic_soft_sell(dataframe: DataFrame, tf_suffix: str = ''):
+        return (
+            (dataframe['ema34' + tf_suffix] <= dataframe['ema89' + tf_suffix])
+        )
+
+    def check_if_trend_sonic_soft_buy(self, dataframe: DataFrame, tf_suffix: str = ''):
+        return (
+            self.config.get('soft_sonic', False) & self.trend_sonic_soft_buy(dataframe, tf_suffix)
+        )
+
+    def check_if_trend_sonic_soft_sell(self, dataframe: DataFrame, tf_suffix: str = ''):
+        return (
+            self.config.get('soft_sonic', False) & self.trend_sonic_soft_sell(dataframe, tf_suffix)
+        )
